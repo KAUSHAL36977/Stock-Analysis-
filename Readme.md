@@ -1,144 +1,115 @@
-Here is a `README.md` file based on the steps provided:
+Here is the `README.md` file for the C++ stock analysis program:
 
 ```markdown
-# Stock Analysis Bot
+# Stock Analysis Bot (C++)
 
-This is a Python-based stock analysis bot that uses historical stock data to calculate various technical indicators like Moving Averages and RSI (Relative Strength Index). It also supports making stock predictions using machine learning models.
+This C++ program analyzes stock data by calculating technical indicators such as the Simple Moving Average (SMA) and the Relative Strength Index (RSI) from historical stock data. The stock data is read from a CSV file containing the stock's daily information.
 
 ## Features
-- Download stock data from Yahoo Finance using the `yfinance` library.
-- Calculate technical indicators like:
-  - Simple Moving Averages (SMA)
-  - Relative Strength Index (RSI)
-- Visualize stock trends with Matplotlib.
-- Predict future stock prices using Linear Regression.
-- Set alerts based on technical indicators.
+- Read historical stock data from a CSV file.
+- Calculate Simple Moving Averages (SMA) for stock closing prices.
+- Calculate Relative Strength Index (RSI) for stock price momentum.
+- Display the analysis results in a tabular format.
 
 ## Requirements
 
-Before you begin, ensure you have the following installed:
+Before you begin, ensure you have the following:
+- A C++ compiler (e.g., `g++`)
+- A CSV file with stock data (see below for the required format)
 
-- Python 3.x
-- pip (Python's package installer)
-
-### Install Dependencies
-
-You can install the required dependencies using the following command:
-
-```bash
-pip install yfinance pandas matplotlib scikit-learn
-```
+### Libraries Used:
+- `fstream` for file handling
+- `vector` for dynamic arrays
+- `sstream` for string manipulation
+- `algorithm` for sorting (if needed)
 
 ## Setup
 
-### 1. **Download Stock Data**
+### 1. **Prepare the Stock Data CSV**
 
-The bot uses the `yfinance` library to download stock data. Here's how to get stock data for a company (e.g., Apple) over the past 5 years:
+The stock data should be in a CSV format with the following columns:
 
-```python
-import yfinance as yf
-
-# Get stock data for Apple over the past 5 years
-stock_data = yf.download('AAPL', period='5y', interval='1d')
-print(stock_data.head())
+```csv
+Date,Open,High,Low,Close,Volume
 ```
 
-### 2. **Preprocessing the Data**
+Example:
 
-To calculate technical indicators, you can preprocess the data. Here's an example of calculating moving averages:
-
-```python
-stock_data['SMA_50'] = stock_data['Close'].rolling(window=50).mean()  # 50-day simple moving average
-stock_data['SMA_200'] = stock_data['Close'].rolling(window=200).mean()  # 200-day simple moving average
+```csv
+Date,Open,High,Low,Close,Volume
+2023-01-01,150,155,148,152,1000000
+2023-01-02,153,157,151,155,1100000
+2023-01-03,155,160,152,158,1200000
+...
 ```
 
-### 3. **Technical Indicators**
+Save your file as `stock_data.csv`.
 
-#### Calculating the Relative Strength Index (RSI)
+### 2. **Code Setup**
 
-The RSI is used to measure if a stock is overbought or oversold. Here's the code to calculate it:
+1. **Save the Code**: Save the provided C++ code in a file named `StockAnalysis.cpp`.
 
-```python
-def calculate_RSI(data, window=14):
-    delta = data.diff()
-    gain = delta.where(delta > 0, 0)
-    loss = -delta.where(delta < 0, 0)
-    
-    avg_gain = gain.rolling(window=window, min_periods=1).mean()
-    avg_loss = loss.rolling(window=window, min_periods=1).mean()
-    
-    rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
+2. **Compile the Code**: To compile the C++ code, use the following command:
+   ```bash
+   g++ StockAnalysis.cpp -o StockAnalysis
+   ```
 
-stock_data['RSI'] = calculate_RSI(stock_data['Close'])
+3. **Run the Program**: After compilation, you can run the program using:
+   ```bash
+   ./StockAnalysis
+   ```
+
+### 3. **CSV File Path**
+Ensure that your stock data CSV file (`stock_data.csv`) is in the same directory as the program, or specify the correct path in the code.
+
+## Functions
+
+### 1. **`readStockData(const std::string &filename)`**
+
+This function reads stock data from a CSV file and returns a vector of `StockData` structs.
+
+- **Input**: CSV file path.
+- **Output**: Vector of `StockData` structs containing the stock data.
+
+### 2. **`calculateSMA(const std::vector<StockData> &data, int window)`**
+
+This function calculates the Simple Moving Average (SMA) for the stock closing prices.
+
+- **Input**: A vector of `StockData` and the window size (e.g., 50 days).
+- **Output**: A vector of SMA values.
+
+### 3. **`calculateRSI(const std::vector<StockData> &data, int period)`**
+
+This function calculates the Relative Strength Index (RSI) for the stock closing prices.
+
+- **Input**: A vector of `StockData` and the period (default is 14).
+- **Output**: A vector of RSI values.
+
+### 4. **`displayAnalysis(const std::vector<StockData> &data, const std::vector<double> &sma, const std::vector<double> &rsi)`**
+
+This function displays the stock data along with the calculated SMA and RSI.
+
+- **Output**: Displays the Date, Closing Price, SMA (if available), and RSI (if available) in a table format.
+
+## Example Output
+
+```text
+Date        Close   SMA_50  RSI_14
+2023-01-01  152     N/A     N/A
+2023-01-02  155     N/A     N/A
+2023-01-03  158     N/A     N/A
+...
 ```
 
-### 4. **Prediction using Linear Regression**
+## How to Extend
 
-If you want the bot to predict future stock prices, you can use Linear Regression. Here's how to set it up:
-
-```python
-from sklearn.linear_model import LinearRegression
-import numpy as np
-
-# Prepare the data
-stock_data['Date'] = stock_data.index
-stock_data['Date'] = stock_data['Date'].map(pd.Timestamp.toordinal)
-
-X = stock_data[['Date']]
-y = stock_data['Close']
-
-model = LinearRegression()
-model.fit(X, y)
-
-# Predict stock price for the next day
-future_date = np.array([[pd.Timestamp('2025-01-01').toordinal()]])
-predicted_price = model.predict(future_date)
-print(predicted_price)
-```
-
-### 5. **Visualizing the Data**
-
-Use Matplotlib to visualize the stock data, including closing prices and moving averages:
-
-```python
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(12, 6))
-plt.plot(stock_data['Close'], label='Close Price')
-plt.plot(stock_data['SMA_50'], label='50-day Moving Average')
-plt.plot(stock_data['SMA_200'], label='200-day Moving Average')
-plt.legend()
-plt.title('Stock Price with Moving Averages')
-plt.show()
-```
-
-### 6. **Setting Alerts**
-
-You can set alerts based on conditions like RSI thresholds. For example, you can get an alert when the stock is overbought (RSI > 70) or oversold (RSI < 30):
-
-```python
-if stock_data['RSI'][-1] > 70:
-    print("Overbought: Time to sell!")
-elif stock_data['RSI'][-1] < 30:
-    print("Oversold: Time to buy!")
-```
-
-### 7. **Scheduling and Automation**
-
-For automation, you can use scheduling libraries like `schedule` or `APScheduler` to run the analysis at regular intervals (e.g., every day after market hours).
-
-## Improving the Bot
-
-- **Add More Indicators**: You can include other technical indicators like MACD, Bollinger Bands, and Average True Range (ATR).
-- **Machine Learning**: Implement more complex models like Random Forest, XGBoost, or LSTM (Long Short-Term Memory) for better stock predictions.
-- **Real-Time Trading**: Integrate with platforms like Alpaca or Robinhood for real-time stock trading based on the analysis.
-- **Deployment**: Consider deploying the bot on cloud platforms like AWS or Google Cloud to run it continuously.
+- **More Technical Indicators**: You can add more technical analysis methods like MACD, Bollinger Bands, etc.
+- **Real-Time Data**: Integrate APIs like Alpha Vantage or Quandl to fetch real-time stock data instead of using a static CSV file.
+- **Automated Alerts**: Set alerts based on certain thresholds for SMA, RSI, or other indicators.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ```
 
-This `README.md` provides a structured guide on how to set up and use the stock analysis bot, along with examples and tips for expanding it.
+This `README.md` file explains the setup, usage, and structure of the C++ stock analysis program. It also provides instructions on how to run the program and extend it for more advanced features.
